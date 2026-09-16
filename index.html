@@ -449,7 +449,7 @@
   <section class="section">
     <div class="section-head">
       <h2>Predicted 14-day mortality risk</h2>
-      <p>Multivariable logistic regression (baseline UVA + UVA trajectory class + lactate trajectory class + total IV fluids; AUC 0.824, 95% CI 0.756–0.891). Trajectory class is a clinical judgment call — pick whichever pattern the patient's serial UVA/lactate values resemble. Single-center, unpublished model — not externally validated.</p>
+      <p>Trajectory class is a clinical judgment call — pick whichever pattern the patient's serial UVA/lactate values resemble. Single-center, unpublished model — not externally validated.</p>
     </div>
     <div class="card">
       <div class="risk-inputs">
@@ -684,6 +684,13 @@
   [mBaselineUva, mFluids].forEach(function(el){ el.addEventListener('input', computeRisk); });
   document.querySelectorAll('input[name="uvaTraj"], input[name="lacTraj"]').forEach(function(el){
     el.addEventListener('change', computeRisk);
+  });
+
+  mBaselineUva.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); focusAndSelect(mFluids); }
+  });
+  mFluids.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); mFluids.blur(); }
   });
 
   computeRisk();
