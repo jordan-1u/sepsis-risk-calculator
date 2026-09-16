@@ -625,6 +625,17 @@
     renderTrajectory();
   });
 
+  function focusAndSelect(el){ el.focus(); el.select(); }
+  tpLabel.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); focusAndSelect(tpUva); }
+  });
+  tpUva.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); focusAndSelect(tpLactate); }
+  });
+  tpLactate.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); addTpBtn.click(); focusAndSelect(tpLabel); }
+  });
+
   renderTrajectory();
 
   // --- Predicted mortality risk ---
