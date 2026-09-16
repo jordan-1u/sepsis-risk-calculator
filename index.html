@@ -429,7 +429,7 @@
         </div>
         <div class="field">
           <label for="tpUva">UVA score (0–13)</label>
-          <input type="number" id="tpUva" min="0" max="13" step="1" value="0" placeholder="0–13">
+          <input type="number" id="tpUva" min="0" max="13" step="1" placeholder="0–13" autocomplete="off">
         </div>
         <div class="field">
           <label for="tpLactate">Lactate (mmol/L)</label>
@@ -458,7 +458,7 @@
       <div class="risk-inputs">
         <div class="field">
           <label for="mBaselineUva">Baseline UVA score (0–13)</label>
-          <input type="number" id="mBaselineUva" min="0" max="13" step="1" value="0">
+          <input type="number" id="mBaselineUva" min="0" max="13" step="1" placeholder="0–13" autocomplete="off">
         </div>
         <div class="field">
           <label for="mFluids">Total IV fluids (L)</label>
@@ -547,12 +547,12 @@
   var trendWrap = document.getElementById('trendWrap');
   var trendLegend = document.getElementById('trendLegend');
   var trendChart = document.getElementById('trendChart');
+  tpUva.value = '';
 
   function syncTpUvaFromScore(){
     var current = parseInt(scoreValue.textContent, 10);
     if(!isNaN(current)){ tpUva.value = current; }
   }
-  syncTpUvaFromScore();
   form.addEventListener('change', syncTpUvaFromScore);
 
   function renderTrajectory(){
@@ -658,12 +658,12 @@
   var mFluids = document.getElementById('mFluids');
   var riskOutput = document.getElementById('riskOutput');
   var riskNote = document.getElementById('riskNote');
+  mBaselineUva.value = '';
 
   function syncBaselineUva(){
     var current = parseInt(scoreValue.textContent, 10);
     if(!isNaN(current)){ mBaselineUva.value = current; }
   }
-  syncBaselineUva();
   form.addEventListener('change', syncBaselineUva);
 
   function computeRisk(){
