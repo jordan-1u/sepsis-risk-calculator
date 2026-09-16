@@ -531,8 +531,9 @@
   resetBtn.addEventListener('click', function(){
     form.reset();
     compute();
-    syncTpUvaFromScore();
-    syncBaselineUva();
+    tpUva.value = '';
+    mBaselineUva.value = '';
+    computeRisk();
   });
 
   compute();
