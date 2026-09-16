@@ -416,13 +416,13 @@
   <section class="section">
     <div class="section-head">
       <h2>Serial trajectory</h2>
-      <p>Log the UVA score and lactate at each timepoint (e.g. admission, 0h, 6h) to see how the patient is trending — use this to judge which trajectory class to pick below.</p>
+      <p>Log the UVA score and lactate at each hour since admission to see how the patient is trending — use this to judge which trajectory class to pick below.</p>
     </div>
     <div class="card">
       <div class="traj-add">
         <div class="field">
-          <label for="tpLabel">Timepoint</label>
-          <input type="text" id="tpLabel" placeholder="e.g. 24h" maxlength="20">
+          <label for="tpLabel">Hours since admission</label>
+          <input type="number" id="tpLabel" step="0.5" placeholder="e.g. 24">
         </div>
         <div class="field">
           <label for="tpUva">UVA score (0–13)</label>
@@ -560,7 +560,7 @@
     } else {
       var rows = trajectory.map(function(pt, i){
         return '<tr>' +
-          '<td>' + (pt.label || ('T' + i)) + '</td>' +
+          '<td>' + pt.hours + ' h</td>' +
           '<td>' + pt.uva + ' / 13</td>' +
           '<td>' + (pt.lactate === null ? '—' : pt.lactate) + '</td>' +
           '<td><button class="row-remove" data-i="' + i + '" title="Remove" type="button">&times;</button></td>' +
@@ -568,7 +568,7 @@
       }).join('');
       trajTableWrap.innerHTML =
         '<table class="traj-table"><thead><tr>' +
-        '<th>Timepoint</th><th>UVA score</th><th>Lactate</th><th></th>' +
+        '<th>Hours</th><th>UVA score</th><th>Lactate</th><th></th>' +
         '</tr></thead><tbody>' + rows + '</tbody></table>';
 
       trajTableWrap.querySelectorAll('.row-remove').forEach(function(btn){
@@ -584,14 +584,6 @@
     }
   }
 
-  function parseTimeLabel(label){
-    if(!label) return null;
-    var l = label.trim().toLowerCase();
-    if(l === 'admission' || l === 'baseline') return 0;
-    var m = l.match(/-?\d+(\.\d+)?/);
-    return m ? parseFloat(m[0]) : null;
-  }
-
   function drawTrend(){
     var w = 600, h = 180, padL = 34, padR = 34, padT = 14, padB = 24;
     var n = trajectory.length;
@@ -599,27 +591,18 @@
     var yUva = function(v){ return h - padB - (v / 13) * (h - padT - padB); };
     var yLac = function(v){ return h - padB - (v / maxLactate) * (h - padT - padB); };
 
-    var times = trajectory.map(function(p){ return parseTimeLabel(p.label); });
-    var allNumeric = n > 0 && times.every(function(t){ return t !== null; });
+    var sorted = trajectory.slice().sort(function(a, b){ return a.hours - b.hours; });
+    var minT = sorted[0].hours, maxT = sorted[sorted.length - 1].hours;
+    var xTime = function(t){ return minT === maxT ? (padL + (w - padL - padR) / 2) : padL + ((t - minT) * (w - padL - padR) / (maxT - minT)); };
 
-    var points;
-    if(allNumeric){
-      var minT = Math.min.apply(null, times), maxT = Math.max.apply(null, times);
-      var xTime = function(t){ return minT === maxT ? (padL + (w - padL - padR) / 2) : padL + ((t - minT) * (w - padL - padR) / (maxT - minT)); };
-      points = trajectory.map(function(p, i){ return {p: p, x: xTime(times[i]), label: p.label}; });
-      points.sort(function(a, b){ return a.x - b.x; });
-    } else {
-      var xIndex = function(i){ return n === 1 ? (padL + (w - padL - padR) / 2) : padL + (i * (w - padL - padR) / (n - 1)); };
-      points = trajectory.map(function(p, i){ return {p: p, x: xIndex(i), label: p.label || ('T' + i)}; });
-    }
+    var uvaPts = sorted.map(function(p){ return xTime(p.hours) + ',' + yUva(p.uva); }).join(' ');
+    var lacPts = sorted.map(function(p){ return xTime(p.hours) + ',' + yLac(p.lactate || 0); }).join(' ');
 
-    var uvaPts = points.map(function(pt){ return pt.x + ',' + yUva(pt.p.uva); }).join(' ');
-    var lacPts = points.map(function(pt){ return pt.x + ',' + yLac(pt.p.lactate || 0); }).join(' ');
-
-    var dots = points.map(function(pt){
-      return '<circle cx="' + pt.x + '" cy="' + yUva(pt.p.uva) + '" r="3.5" fill="var(--accent)"/>' +
-        '<circle cx="' + pt.x + '" cy="' + yLac(pt.p.lactate || 0) + '" r="3.5" fill="var(--danger)"/>' +
-        '<text x="' + pt.x + '" y="' + (h - 6) + '" font-size="10" fill="var(--ink-dim)" text-anchor="middle">' + pt.label + '</text>';
+    var dots = sorted.map(function(p){
+      var x = xTime(p.hours);
+      return '<circle cx="' + x + '" cy="' + yUva(p.uva) + '" r="3.5" fill="var(--accent)"/>' +
+        '<circle cx="' + x + '" cy="' + yLac(p.lactate || 0) + '" r="3.5" fill="var(--danger)"/>' +
+        '<text x="' + x + '" y="' + (h - 6) + '" font-size="10" fill="var(--ink-dim)" text-anchor="middle">' + p.hours + 'h</text>';
     }).join('');
 
     trendChart.innerHTML =
@@ -630,9 +613,10 @@
   }
 
   addTpBtn.addEventListener('click', function(){
+    if(tpLabel.value === '') return;
     var lac = tpLactate.value === '' ? null : parseFloat(tpLactate.value);
     trajectory.push({
-      label: tpLabel.value.trim(),
+      hours: parseFloat(tpLabel.value),
       uva: Math.max(0, Math.min(13, parseInt(tpUva.value, 10) || 0)),
       lactate: lac
     });
