@@ -318,12 +318,12 @@
 
     riskChip.classList.remove('mid', 'high');
     if(total < 2){
-      riskChip.textContent = 'Baseline UVA <2';
+      riskChip.textContent = 'Low risk';
     } else if(total <= 4){
-      riskChip.textContent = 'Baseline UVA 2–4';
+      riskChip.textContent = 'Intermediate risk';
       riskChip.classList.add('mid');
     } else {
-      riskChip.textContent = 'Baseline UVA >4';
+      riskChip.textContent = 'High risk';
       riskChip.classList.add('high');
     }
   }
