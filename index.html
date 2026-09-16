@@ -164,6 +164,7 @@
   .var-row .options{ margin-top:0; flex-wrap:nowrap; gap:6px; }
   .var-row .opt-body{
     flex-direction:row;
+    justify-content:center;
     gap:5px;
     min-width:0;
     padding:6px 10px;
@@ -668,15 +669,20 @@
 
   computeRisk();
 
-  // --- Equalize button widths within each option group ---
+  // --- Equalize button widths: all UVA row pills share one width; each
+  // trajectory-class group (not inside a var-row) is equalized on its own ---
+  function equalizeWidths(bodies){
+    if(bodies.length < 2) return;
+    bodies.forEach(function(b){ b.style.width = ''; });
+    var max = 0;
+    bodies.forEach(function(b){ max = Math.max(max, b.getBoundingClientRect().width); });
+    bodies.forEach(function(b){ b.style.width = max + 'px'; });
+  }
   function equalizeOptionGroups(){
+    equalizeWidths(document.querySelectorAll('.var-row .opt-body'));
     document.querySelectorAll('.options').forEach(function(group){
-      var bodies = group.querySelectorAll('.opt-body');
-      if(bodies.length < 2) return;
-      bodies.forEach(function(b){ b.style.width = ''; });
-      var max = 0;
-      bodies.forEach(function(b){ max = Math.max(max, b.getBoundingClientRect().width); });
-      bodies.forEach(function(b){ b.style.width = max + 'px'; });
+      if(group.closest('.var-row')) return;
+      equalizeWidths(group.querySelectorAll('.opt-body'));
     });
   }
   equalizeOptionGroups();
