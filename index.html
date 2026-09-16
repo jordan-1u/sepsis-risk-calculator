@@ -331,19 +331,25 @@
   <header>
     <p class="eyebrow">Bedside triage tool</p>
     <h1>Sepsis Risk Calculator</h1>
-    <p class="sub">Universal Vital Assessment score for hospitalized adults with sepsis — select the observed value for each variable to compute the total point score.</p>
+    <p class="sub">Universal Vital Assessment score, serial trajectory, and 14-day mortality risk for hospitalized adults with sepsis.</p>
   </header>
 
-  <div class="score-band">
-    <div>
-      <p class="score-label">Total UVA score</p>
-      <div class="score-value" id="scoreValue">0<span> / 13</span></div>
+  <section class="section" style="margin-top:0;">
+    <div class="section-head">
+      <h2>UVA score</h2>
+      <p>Select the observed value for each variable to compute the total point score.</p>
     </div>
-    <span class="risk-chip" id="riskChip">Select all variables</span>
-    <button class="reset-btn" id="resetBtn" type="button">Reset</button>
-  </div>
 
-  <form class="variables" id="uvaForm">
+    <div class="score-band">
+      <div>
+        <p class="score-label">Total UVA score</p>
+        <div class="score-value" id="scoreValue">0<span> / 13</span></div>
+      </div>
+      <span class="risk-chip" id="riskChip">Select all variables</span>
+      <button class="reset-btn" id="resetBtn" type="button">Reset</button>
+    </div>
+
+    <form class="variables" id="uvaForm">
 
     <div class="var-row">
       <span class="var-label">Temperature <span class="var-unit">(°C)</span></span>
@@ -402,6 +408,7 @@
     </div>
 
   </form>
+  </section>
 
   <section class="section">
     <div class="section-head">
