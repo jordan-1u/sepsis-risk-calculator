@@ -532,8 +532,6 @@
     form.reset();
     compute();
     tpUva.value = '';
-    mBaselineUva.value = '';
-    computeRisk();
   });
 
   compute();
@@ -659,13 +657,6 @@
   var mFluids = document.getElementById('mFluids');
   var riskOutput = document.getElementById('riskOutput');
   var riskNote = document.getElementById('riskNote');
-  mBaselineUva.value = '';
-
-  function syncBaselineUva(){
-    var current = parseInt(scoreValue.textContent, 10);
-    if(!isNaN(current)){ mBaselineUva.value = current; }
-  }
-  form.addEventListener('change', syncBaselineUva);
 
   function computeRisk(){
     var baselineUva = Math.max(0, Math.min(13, parseInt(mBaselineUva.value, 10) || 0));
