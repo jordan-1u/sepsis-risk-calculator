@@ -1,0 +1,12 @@
+{
+  "name": "UVA Score Calculator",
+  "short_name": "UVA Score",
+  "description": "Universal Vital Assessment point-based scoring calculator.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#F5F3EF",
+  "theme_color": "#0F6E67",
+  "icons": [
+    { "src": "icon.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
