@@ -228,6 +228,13 @@
     padding:16px;
   }
 
+  .traj-add{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:flex-end;
+    margin-bottom:14px;
+  }
   .field{ display:flex; flex-direction:column; gap:4px; }
   .field label{ font-size:11px; color:var(--ink-dim); letter-spacing:.03em; }
   .field input{
@@ -241,6 +248,48 @@
     width:112px;
   }
   .field input:focus-visible{ outline:2px solid var(--accent); outline-offset:1px; }
+  .add-btn{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12px;
+    background:var(--accent);
+    color:var(--accent-ink);
+    border:none;
+    padding:9px 14px;
+    border-radius:8px;
+    cursor:pointer;
+    height:37px;
+  }
+  .add-btn:hover{ opacity:.9; }
+  .add-btn:disabled{ opacity:.45; cursor:not-allowed; }
+
+  table.traj-table{ width:100%; border-collapse:collapse; font-size:13px; margin-bottom:16px; }
+  table.traj-table th{
+    text-align:left;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:var(--ink-dim);
+    padding:0 8px 6px;
+    border-bottom:1px solid var(--border);
+  }
+  table.traj-table td{
+    padding:7px 8px;
+    border-bottom:1px solid var(--border);
+    font-variant-numeric:tabular-nums;
+  }
+  table.traj-table tr:last-child td{ border-bottom:none; }
+  .row-remove{
+    background:none; border:none; color:var(--ink-dim);
+    cursor:pointer; font-size:15px; line-height:1; padding:2px 6px;
+  }
+  .row-remove:hover{ color:var(--danger); }
+  .empty-note{ font-size:12.5px; color:var(--ink-dim); padding:6px 2px 14px; }
+
+  .trend-wrap{ overflow-x:auto; }
+  .trend-legend{ display:flex; gap:16px; font-size:11.5px; color:var(--ink-dim); margin-top:6px; }
+  .trend-wrap[hidden], .trend-legend[hidden]{ display:none; }
+  .trend-legend span{ display:inline-flex; align-items:center; gap:5px; }
+  .swatch{ width:10px; height:10px; border-radius:2px; display:inline-block; }
 
   .risk-inputs{
     display:grid;
@@ -346,6 +395,39 @@
 
   <section class="section">
     <div class="section-head">
+      <h2>Serial trajectory</h2>
+      <p>Log the UVA score and lactate at each timepoint (e.g. admission, 24h, 48h) to see how the patient is trending — use this to judge which trajectory class to pick below.</p>
+    </div>
+    <div class="card">
+      <div class="traj-add">
+        <div class="field">
+          <label for="tpLabel">Timepoint</label>
+          <input type="text" id="tpLabel" placeholder="e.g. 24h" maxlength="20">
+        </div>
+        <div class="field">
+          <label for="tpUva">UVA score (0–13)</label>
+          <input type="number" id="tpUva" min="0" max="13" step="1" value="0">
+        </div>
+        <div class="field">
+          <label for="tpLactate">Lactate (mmol/L)</label>
+          <input type="number" id="tpLactate" min="0" step="0.1" placeholder="e.g. 2.4">
+        </div>
+        <button class="add-btn" id="addTpBtn" type="button">Add timepoint</button>
+      </div>
+
+      <div id="trajTableWrap"></div>
+      <div class="trend-wrap" id="trendWrap" hidden>
+        <svg id="trendChart" viewBox="0 0 600 180" width="100%" height="180" role="img" aria-label="UVA score and lactate trend over timepoints"></svg>
+      </div>
+      <div class="trend-legend" id="trendLegend" hidden>
+        <span><span class="swatch" style="background:var(--accent)"></span>UVA score</span>
+        <span><span class="swatch" style="background:var(--danger)"></span>Lactate (mmol/L)</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
       <h2>Predicted 14-day mortality risk</h2>
       <p>Multivariable logistic regression fit on n=155 adults with sepsis in Uganda (baseline UVA + UVA trajectory class + lactate trajectory class + total IV fluids; AUC 0.824, 95% CI 0.756–0.891). Trajectory class is a clinical judgment call — pick whichever pattern the patient's serial UVA/lactate values resemble. Single-center, unpublished model — not externally validated.</p>
     </div>
@@ -429,6 +511,94 @@
   });
 
   compute();
+
+  // --- Serial trajectory ---
+  var trajectory = [];
+  var tpLabel = document.getElementById('tpLabel');
+  var tpUva = document.getElementById('tpUva');
+  var tpLactate = document.getElementById('tpLactate');
+  var addTpBtn = document.getElementById('addTpBtn');
+  var trajTableWrap = document.getElementById('trajTableWrap');
+  var trendWrap = document.getElementById('trendWrap');
+  var trendLegend = document.getElementById('trendLegend');
+  var trendChart = document.getElementById('trendChart');
+
+  function syncTpUvaFromScore(){
+    var current = parseInt(scoreValue.textContent, 10);
+    if(!isNaN(current)){ tpUva.value = current; }
+  }
+  syncTpUvaFromScore();
+  form.addEventListener('change', syncTpUvaFromScore);
+
+  function renderTrajectory(){
+    if(trajectory.length === 0){
+      trajTableWrap.innerHTML = '<p class="empty-note">No timepoints logged yet.</p>';
+      trendWrap.hidden = true;
+      trendLegend.hidden = true;
+    } else {
+      var rows = trajectory.map(function(pt, i){
+        return '<tr>' +
+          '<td>' + (pt.label || ('T' + i)) + '</td>' +
+          '<td>' + pt.uva + ' / 13</td>' +
+          '<td>' + (pt.lactate === null ? '—' : pt.lactate) + '</td>' +
+          '<td><button class="row-remove" data-i="' + i + '" title="Remove" type="button">&times;</button></td>' +
+          '</tr>';
+      }).join('');
+      trajTableWrap.innerHTML =
+        '<table class="traj-table"><thead><tr>' +
+        '<th>Timepoint</th><th>UVA score</th><th>Lactate</th><th></th>' +
+        '</tr></thead><tbody>' + rows + '</tbody></table>';
+
+      trajTableWrap.querySelectorAll('.row-remove').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          trajectory.splice(parseInt(btn.dataset.i, 10), 1);
+          renderTrajectory();
+        });
+      });
+
+      drawTrend();
+      trendWrap.hidden = false;
+      trendLegend.hidden = false;
+    }
+  }
+
+  function drawTrend(){
+    var w = 600, h = 180, padL = 34, padR = 34, padT = 14, padB = 24;
+    var n = trajectory.length;
+    var maxLactate = Math.max(4, Math.ceil(Math.max.apply(null, trajectory.map(function(p){ return p.lactate || 0; }))));
+    var x = function(i){ return n === 1 ? (padL + (w - padL - padR) / 2) : padL + (i * (w - padL - padR) / (n - 1)); };
+    var yUva = function(v){ return h - padB - (v / 13) * (h - padT - padB); };
+    var yLac = function(v){ return h - padB - (v / maxLactate) * (h - padT - padB); };
+
+    var uvaPts = trajectory.map(function(p, i){ return x(i) + ',' + yUva(p.uva); }).join(' ');
+    var lacPts = trajectory.map(function(p, i){ return x(i) + ',' + yLac(p.lactate || 0); }).join(' ');
+
+    var dots = trajectory.map(function(p, i){
+      return '<circle cx="' + x(i) + '" cy="' + yUva(p.uva) + '" r="3.5" fill="var(--accent)"/>' +
+        '<circle cx="' + x(i) + '" cy="' + yLac(p.lactate || 0) + '" r="3.5" fill="var(--danger)"/>' +
+        '<text x="' + x(i) + '" y="' + (h - 6) + '" font-size="10" fill="var(--ink-dim)" text-anchor="middle">' + (p.label || ('T' + i)) + '</text>';
+    }).join('');
+
+    trendChart.innerHTML =
+      '<line x1="' + padL + '" y1="' + (h - padB) + '" x2="' + (w - padR) + '" y2="' + (h - padB) + '" stroke="var(--border)"/>' +
+      (n > 1 ? '<polyline points="' + uvaPts + '" fill="none" stroke="var(--accent)" stroke-width="2"/>' : '') +
+      (n > 1 ? '<polyline points="' + lacPts + '" fill="none" stroke="var(--danger)" stroke-width="2"/>' : '') +
+      dots;
+  }
+
+  addTpBtn.addEventListener('click', function(){
+    var lac = tpLactate.value === '' ? null : parseFloat(tpLactate.value);
+    trajectory.push({
+      label: tpLabel.value.trim(),
+      uva: Math.max(0, Math.min(13, parseInt(tpUva.value, 10) || 0)),
+      lactate: lac
+    });
+    tpLabel.value = '';
+    tpLactate.value = '';
+    renderTrajectory();
+  });
+
+  renderTrajectory();
 
   // --- Predicted mortality risk ---
   // Fitted logistic regression: living_status_day_14 ~ uva_0 + uva_class + lactate_class + total_fluid_liters
