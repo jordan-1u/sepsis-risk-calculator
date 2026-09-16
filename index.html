@@ -667,5 +667,23 @@
   });
 
   computeRisk();
+
+  // --- Equalize button widths within each option group ---
+  function equalizeOptionGroups(){
+    document.querySelectorAll('.options').forEach(function(group){
+      var bodies = group.querySelectorAll('.opt-body');
+      if(bodies.length < 2) return;
+      bodies.forEach(function(b){ b.style.width = ''; });
+      var max = 0;
+      bodies.forEach(function(b){ max = Math.max(max, b.getBoundingClientRect().width); });
+      bodies.forEach(function(b){ b.style.width = max + 'px'; });
+    });
+  }
+  equalizeOptionGroups();
+  var resizeTimer;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(equalizeOptionGroups, 150);
+  });
 })();
 </script>
