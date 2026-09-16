@@ -584,21 +584,42 @@
     }
   }
 
+  function parseTimeLabel(label){
+    if(!label) return null;
+    var l = label.trim().toLowerCase();
+    if(l === 'admission' || l === 'baseline') return 0;
+    var m = l.match(/-?\d+(\.\d+)?/);
+    return m ? parseFloat(m[0]) : null;
+  }
+
   function drawTrend(){
     var w = 600, h = 180, padL = 34, padR = 34, padT = 14, padB = 24;
     var n = trajectory.length;
     var maxLactate = Math.max(4, Math.ceil(Math.max.apply(null, trajectory.map(function(p){ return p.lactate || 0; }))));
-    var x = function(i){ return n === 1 ? (padL + (w - padL - padR) / 2) : padL + (i * (w - padL - padR) / (n - 1)); };
     var yUva = function(v){ return h - padB - (v / 13) * (h - padT - padB); };
     var yLac = function(v){ return h - padB - (v / maxLactate) * (h - padT - padB); };
 
-    var uvaPts = trajectory.map(function(p, i){ return x(i) + ',' + yUva(p.uva); }).join(' ');
-    var lacPts = trajectory.map(function(p, i){ return x(i) + ',' + yLac(p.lactate || 0); }).join(' ');
+    var times = trajectory.map(function(p){ return parseTimeLabel(p.label); });
+    var allNumeric = n > 0 && times.every(function(t){ return t !== null; });
 
-    var dots = trajectory.map(function(p, i){
-      return '<circle cx="' + x(i) + '" cy="' + yUva(p.uva) + '" r="3.5" fill="var(--accent)"/>' +
-        '<circle cx="' + x(i) + '" cy="' + yLac(p.lactate || 0) + '" r="3.5" fill="var(--danger)"/>' +
-        '<text x="' + x(i) + '" y="' + (h - 6) + '" font-size="10" fill="var(--ink-dim)" text-anchor="middle">' + (p.label || ('T' + i)) + '</text>';
+    var points;
+    if(allNumeric){
+      var minT = Math.min.apply(null, times), maxT = Math.max.apply(null, times);
+      var xTime = function(t){ return minT === maxT ? (padL + (w - padL - padR) / 2) : padL + ((t - minT) * (w - padL - padR) / (maxT - minT)); };
+      points = trajectory.map(function(p, i){ return {p: p, x: xTime(times[i]), label: p.label}; });
+      points.sort(function(a, b){ return a.x - b.x; });
+    } else {
+      var xIndex = function(i){ return n === 1 ? (padL + (w - padL - padR) / 2) : padL + (i * (w - padL - padR) / (n - 1)); };
+      points = trajectory.map(function(p, i){ return {p: p, x: xIndex(i), label: p.label || ('T' + i)}; });
+    }
+
+    var uvaPts = points.map(function(pt){ return pt.x + ',' + yUva(pt.p.uva); }).join(' ');
+    var lacPts = points.map(function(pt){ return pt.x + ',' + yLac(pt.p.lactate || 0); }).join(' ');
+
+    var dots = points.map(function(pt){
+      return '<circle cx="' + pt.x + '" cy="' + yUva(pt.p.uva) + '" r="3.5" fill="var(--accent)"/>' +
+        '<circle cx="' + pt.x + '" cy="' + yLac(pt.p.lactate || 0) + '" r="3.5" fill="var(--danger)"/>' +
+        '<text x="' + pt.x + '" y="' + (h - 6) + '" font-size="10" fill="var(--ink-dim)" text-anchor="middle">' + pt.label + '</text>';
     }).join('');
 
     trendChart.innerHTML =
