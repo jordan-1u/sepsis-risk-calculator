@@ -1,7 +1,7 @@
 {
-  "name": "UVA Score Calculator",
-  "short_name": "UVA Score",
-  "description": "Universal Vital Assessment point-based scoring calculator.",
+  "name": "Sepsis Risk Calculator",
+  "short_name": "Sepsis Risk",
+  "description": "UVA score, serial lactate/UVA trajectory, and 14-day mortality risk calculator for sepsis.",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#F5F3EF",

@@ -1,5 +1,5 @@
 <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <rect width="512" height="512" rx="112" fill="#0F6E67"/>
-  <text x="256" y="243" font-family="IBM Plex Mono, monospace" font-size="128" font-weight="700" fill="#FFFFFF" text-anchor="middle">UVA</text>
-  <text x="256" y="340" font-family="IBM Plex Mono, monospace" font-size="56" font-weight="500" fill="#B9E4DE" text-anchor="middle">SCORE</text>
+  <text x="256" y="233" font-family="IBM Plex Mono, monospace" font-size="96" font-weight="700" fill="#FFFFFF" text-anchor="middle">SEPSIS</text>
+  <text x="256" y="330" font-family="IBM Plex Mono, monospace" font-size="60" font-weight="500" fill="#B9E4DE" text-anchor="middle">RISK</text>
 </svg>
