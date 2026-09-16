@@ -228,13 +228,6 @@
     padding:16px;
   }
 
-  .traj-add{
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    align-items:flex-end;
-    margin-bottom:14px;
-  }
   .field{ display:flex; flex-direction:column; gap:4px; }
   .field label{ font-size:11px; color:var(--ink-dim); letter-spacing:.03em; }
   .field input{
@@ -248,48 +241,6 @@
     width:112px;
   }
   .field input:focus-visible{ outline:2px solid var(--accent); outline-offset:1px; }
-  .add-btn{
-    font-family:"IBM Plex Mono", monospace;
-    font-size:12px;
-    background:var(--accent);
-    color:var(--accent-ink);
-    border:none;
-    padding:9px 14px;
-    border-radius:8px;
-    cursor:pointer;
-    height:37px;
-  }
-  .add-btn:hover{ opacity:.9; }
-  .add-btn:disabled{ opacity:.45; cursor:not-allowed; }
-
-  table.traj-table{ width:100%; border-collapse:collapse; font-size:13px; margin-bottom:16px; }
-  table.traj-table th{
-    text-align:left;
-    font-size:11px;
-    text-transform:uppercase;
-    letter-spacing:.05em;
-    color:var(--ink-dim);
-    padding:0 8px 6px;
-    border-bottom:1px solid var(--border);
-  }
-  table.traj-table td{
-    padding:7px 8px;
-    border-bottom:1px solid var(--border);
-    font-variant-numeric:tabular-nums;
-  }
-  table.traj-table tr:last-child td{ border-bottom:none; }
-  .row-remove{
-    background:none; border:none; color:var(--ink-dim);
-    cursor:pointer; font-size:15px; line-height:1; padding:2px 6px;
-  }
-  .row-remove:hover{ color:var(--danger); }
-  .empty-note{ font-size:12.5px; color:var(--ink-dim); padding:6px 2px 14px; }
-
-  .trend-wrap{ overflow-x:auto; }
-  .trend-legend{ display:flex; gap:16px; font-size:11.5px; color:var(--ink-dim); margin-top:6px; }
-  .trend-wrap[hidden], .trend-legend[hidden]{ display:none; }
-  .trend-legend span{ display:inline-flex; align-items:center; gap:5px; }
-  .swatch{ width:10px; height:10px; border-radius:2px; display:inline-block; }
 
   .risk-inputs{
     display:grid;
@@ -314,7 +265,6 @@
     font-weight:600;
     font-variant-numeric:tabular-nums;
   }
-  .risk-output .value.inactive{ color:var(--ink-dim); font-size:20px; font-weight:500; }
   .risk-note{ font-size:11.5px; color:var(--ink-dim); max-width:34ch; text-align:right; }
 </style>
 
@@ -396,71 +346,44 @@
 
   <section class="section">
     <div class="section-head">
-      <h2>Serial trajectory</h2>
-      <p>Log the UVA score and lactate at each timepoint (e.g. admission, 24h, 48h) to see how the patient is trending.</p>
-    </div>
-    <div class="card">
-      <div class="traj-add">
-        <div class="field">
-          <label for="tpLabel">Timepoint</label>
-          <input type="text" id="tpLabel" placeholder="e.g. 24h" maxlength="20">
-        </div>
-        <div class="field">
-          <label for="tpUva">UVA score (0–13)</label>
-          <input type="number" id="tpUva" min="0" max="13" step="1" value="0">
-        </div>
-        <div class="field">
-          <label for="tpLactate">Lactate (mmol/L)</label>
-          <input type="number" id="tpLactate" min="0" step="0.1" placeholder="e.g. 2.4">
-        </div>
-        <button class="add-btn" id="addTpBtn" type="button">Add timepoint</button>
-      </div>
-
-      <div id="trajTableWrap"></div>
-      <div class="trend-wrap" id="trendWrap" hidden>
-        <svg id="trendChart" viewBox="0 0 600 180" width="100%" height="180" role="img" aria-label="UVA score and lactate trend over timepoints"></svg>
-      </div>
-      <div class="trend-legend" id="trendLegend" hidden>
-        <span><span class="swatch" style="background:var(--accent)"></span>UVA score</span>
-        <span><span class="swatch" style="background:var(--danger)"></span>Lactate (mmol/L)</span>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="section-head">
-      <h2>Predicted mortality risk</h2>
-      <p>Uses a logistic regression <strong>you</strong> supply — enter the intercept and coefficients from your own fitted model (e.g. from your lactate project's outcomes data). Nothing here is a validated formula.</p>
+      <h2>Predicted 14-day mortality risk</h2>
+      <p>Multivariable logistic regression fit on n=155 adults with sepsis in Uganda (baseline UVA + UVA trajectory class + lactate trajectory class + total IV fluids; AUC 0.824, 95% CI 0.756–0.891). Trajectory class is a clinical judgment call — pick whichever pattern the patient's serial UVA/lactate values resemble. Single-center, unpublished model — not externally validated.</p>
     </div>
     <div class="card">
       <div class="risk-inputs">
         <div class="field">
-          <label for="cB0">Intercept (β₀)</label>
-          <input type="number" id="cB0" step="any" value="0">
+          <label for="mBaselineUva">Baseline UVA score (0–13)</label>
+          <input type="number" id="mBaselineUva" min="0" max="13" step="1" value="0">
         </div>
         <div class="field">
-          <label for="cB1">Baseline UVA (β₁)</label>
-          <input type="number" id="cB1" step="any" value="0">
-        </div>
-        <div class="field">
-          <label for="cB2">Δ UVA, latest−baseline (β₂)</label>
-          <input type="number" id="cB2" step="any" value="0">
-        </div>
-        <div class="field">
-          <label for="cB3">Baseline lactate (β₃)</label>
-          <input type="number" id="cB3" step="any" value="0">
-        </div>
-        <div class="field">
-          <label for="cB4">Δ Lactate, latest−baseline (β₄)</label>
-          <input type="number" id="cB4" step="any" value="0">
+          <label for="mFluids">Total IV fluids (L)</label>
+          <input type="number" id="mFluids" min="0" step="0.1" placeholder="e.g. 2.0">
         </div>
       </div>
-      <div class="risk-output">
+
+      <div class="field" style="margin-bottom:14px;">
+        <label>UVA score trajectory</label>
+        <div class="options">
+          <label class="opt"><input type="radio" name="uvaTraj" value="1" checked><span class="opt-body"><span class="val">Class 1</span><span class="pts">High, decreasing</span></span></label>
+          <label class="opt"><input type="radio" name="uvaTraj" value="2"><span class="opt-body"><span class="val">Class 2</span><span class="pts">High, stable</span></span></label>
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:4px;">
+        <label>Lactate trajectory</label>
+        <div class="options">
+          <label class="opt"><input type="radio" name="lacTraj" value="1" checked><span class="opt-body"><span class="val">Class 1</span><span class="pts">Low, stable</span></span></label>
+          <label class="opt"><input type="radio" name="lacTraj" value="2"><span class="opt-body"><span class="val">Class 2</span><span class="pts">High, decreasing</span></span></label>
+          <label class="opt"><input type="radio" name="lacTraj" value="3"><span class="opt-body"><span class="val">Class 3</span><span class="pts">Increasing</span></span></label>
+        </div>
+      </div>
+
+      <div class="risk-output" style="margin-top:16px;">
         <div>
           <p class="score-label">Predicted mortality risk</p>
-          <div class="value inactive" id="riskOutput">—</div>
+          <div class="value" id="riskOutput">—</div>
         </div>
-        <p class="risk-note" id="riskNote">Enter your model's coefficients above, and log at least one trajectory timepoint, to calculate.</p>
+        <p class="risk-note" id="riskNote"></p>
       </div>
     </div>
   </section>
@@ -507,132 +430,54 @@
 
   compute();
 
-  // --- Serial trajectory ---
-  var trajectory = [];
-  var tpLabel = document.getElementById('tpLabel');
-  var tpUva = document.getElementById('tpUva');
-  var tpLactate = document.getElementById('tpLactate');
-  var addTpBtn = document.getElementById('addTpBtn');
-  var trajTableWrap = document.getElementById('trajTableWrap');
-  var trendWrap = document.getElementById('trendWrap');
-  var trendLegend = document.getElementById('trendLegend');
-  var trendChart = document.getElementById('trendChart');
+  // --- Predicted mortality risk ---
+  // Fitted logistic regression: living_status_day_14 ~ uva_0 + uva_class + lactate_class + total_fluid_liters
+  // glm(family=binomial), n=155, AUC 0.824 (95% CI 0.756-0.891). Source: best_model_overall.R / best_model_overall.RData.
+  var MODEL = {
+    intercept: -3.45938,
+    baselineUva: 0.42977,
+    uvaClass2: 1.40085,   // vs. UVA Class 1 (reference)
+    lacClass2: 1.31142,   // vs. Lactate Class 1 (reference)
+    lacClass3: 2.80731,
+    fluids: -0.53399
+  };
 
-  function syncUvaFromScore(){
-    var current = parseInt(scoreValue.textContent, 10);
-    if(!isNaN(current)){ tpUva.value = current; }
-  }
-  syncUvaFromScore();
-  form.addEventListener('change', syncUvaFromScore);
-
-  function renderTrajectory(){
-    if(trajectory.length === 0){
-      trajTableWrap.innerHTML = '<p class="empty-note">No timepoints logged yet.</p>';
-      trendWrap.hidden = true;
-      trendLegend.hidden = true;
-    } else {
-      var rows = trajectory.map(function(pt, i){
-        return '<tr>' +
-          '<td>' + (pt.label || ('T' + i)) + '</td>' +
-          '<td>' + pt.uva + ' / 13</td>' +
-          '<td>' + (pt.lactate === null ? '—' : pt.lactate) + '</td>' +
-          '<td><button class="row-remove" data-i="' + i + '" title="Remove" type="button">&times;</button></td>' +
-          '</tr>';
-      }).join('');
-      trajTableWrap.innerHTML =
-        '<table class="traj-table"><thead><tr>' +
-        '<th>Timepoint</th><th>UVA score</th><th>Lactate</th><th></th>' +
-        '</tr></thead><tbody>' + rows + '</tbody></table>';
-
-      trajTableWrap.querySelectorAll('.row-remove').forEach(function(btn){
-        btn.addEventListener('click', function(){
-          trajectory.splice(parseInt(btn.dataset.i, 10), 1);
-          renderTrajectory();
-          computeRisk();
-        });
-      });
-
-      drawTrend();
-      trendWrap.hidden = false;
-      trendLegend.hidden = false;
-    }
-  }
-
-  function drawTrend(){
-    var w = 600, h = 180, padL = 34, padR = 34, padT = 14, padB = 24;
-    var n = trajectory.length;
-    var maxLactate = Math.max(4, Math.ceil(Math.max.apply(null, trajectory.map(function(p){ return p.lactate || 0; }))));
-    var x = function(i){ return n === 1 ? (padL + (w - padL - padR) / 2) : padL + (i * (w - padL - padR) / (n - 1)); };
-    var yUva = function(v){ return h - padB - (v / 13) * (h - padT - padB); };
-    var yLac = function(v){ return h - padB - (v / maxLactate) * (h - padT - padB); };
-
-    var uvaPts = trajectory.map(function(p, i){ return x(i) + ',' + yUva(p.uva); }).join(' ');
-    var lacPts = trajectory.map(function(p, i){ return x(i) + ',' + yLac(p.lactate || 0); }).join(' ');
-
-    var dots = trajectory.map(function(p, i){
-      return '<circle cx="' + x(i) + '" cy="' + yUva(p.uva) + '" r="3.5" fill="var(--accent)"/>' +
-        '<circle cx="' + x(i) + '" cy="' + yLac(p.lactate || 0) + '" r="3.5" fill="var(--danger)"/>' +
-        '<text x="' + x(i) + '" y="' + (h - 6) + '" font-size="10" fill="var(--ink-dim)" text-anchor="middle">' + (p.label || ('T' + i)) + '</text>';
-    }).join('');
-
-    trendChart.innerHTML =
-      '<line x1="' + padL + '" y1="' + (h - padB) + '" x2="' + (w - padR) + '" y2="' + (h - padB) + '" stroke="var(--border)"/>' +
-      (n > 1 ? '<polyline points="' + uvaPts + '" fill="none" stroke="var(--accent)" stroke-width="2"/>' : '') +
-      (n > 1 ? '<polyline points="' + lacPts + '" fill="none" stroke="var(--danger)" stroke-width="2"/>' : '') +
-      dots;
-  }
-
-  addTpBtn.addEventListener('click', function(){
-    var lac = tpLactate.value === '' ? null : parseFloat(tpLactate.value);
-    trajectory.push({
-      label: tpLabel.value.trim(),
-      uva: Math.max(0, Math.min(13, parseInt(tpUva.value, 10) || 0)),
-      lactate: lac
-    });
-    tpLabel.value = '';
-    tpLactate.value = '';
-    renderTrajectory();
-    computeRisk();
-  });
-
-  // --- Mortality risk (user-supplied coefficients) ---
-  var coefIds = ['cB0','cB1','cB2','cB3','cB4'];
+  var mBaselineUva = document.getElementById('mBaselineUva');
+  var mFluids = document.getElementById('mFluids');
   var riskOutput = document.getElementById('riskOutput');
   var riskNote = document.getElementById('riskNote');
 
+  function syncBaselineUva(){
+    var current = parseInt(scoreValue.textContent, 10);
+    if(!isNaN(current)){ mBaselineUva.value = current; }
+  }
+  syncBaselineUva();
+  form.addEventListener('change', syncBaselineUva);
+
   function computeRisk(){
-    var c = coefIds.map(function(id){ return parseFloat(document.getElementById(id).value) || 0; });
-    var anyCoef = c.some(function(v){ return v !== 0; });
+    var baselineUva = Math.max(0, Math.min(13, parseInt(mBaselineUva.value, 10) || 0));
+    var fluids = parseFloat(mFluids.value) || 0;
+    var uvaClass = document.querySelector('input[name="uvaTraj"]:checked').value;
+    var lacClass = document.querySelector('input[name="lacTraj"]:checked').value;
 
-    if(!anyCoef || trajectory.length === 0){
-      riskOutput.textContent = '—';
-      riskOutput.classList.add('inactive');
-      riskNote.textContent = 'Enter your model\'s coefficients above, and log at least one trajectory timepoint, to calculate.';
-      return;
-    }
+    var z = MODEL.intercept
+      + MODEL.baselineUva * baselineUva
+      + (uvaClass === '2' ? MODEL.uvaClass2 : 0)
+      + (lacClass === '2' ? MODEL.lacClass2 : 0)
+      + (lacClass === '3' ? MODEL.lacClass3 : 0)
+      + MODEL.fluids * fluids;
 
-    var first = trajectory[0];
-    var last = trajectory[trajectory.length - 1];
-    var baselineUva = first.uva;
-    var deltaUva = last.uva - first.uva;
-    var baselineLactate = first.lactate || 0;
-    var deltaLactate = (last.lactate || 0) - (first.lactate || 0);
-
-    var z = c[0] + c[1] * baselineUva + c[2] * deltaUva + c[3] * baselineLactate + c[4] * deltaLactate;
     var p = 1 / (1 + Math.exp(-z));
-
     riskOutput.textContent = (p * 100).toFixed(1) + '%';
-    riskOutput.classList.remove('inactive');
-    riskNote.textContent = trajectory.length === 1
-      ? 'Only one timepoint logged — Δ terms are 0 until you add a second.'
-      : 'Based on baseline (' + (first.label || 'T0') + ') and latest (' + (last.label || ('T' + (trajectory.length - 1))) + ') timepoints.';
+    riskNote.textContent = 'Based on baseline UVA ' + baselineUva + ', UVA trajectory class ' + uvaClass +
+      ', lactate trajectory class ' + lacClass + ', ' + fluids.toFixed(1) + ' L fluids.';
   }
 
-  coefIds.forEach(function(id){
-    document.getElementById(id).addEventListener('input', computeRisk);
+  [mBaselineUva, mFluids].forEach(function(el){ el.addEventListener('input', computeRisk); });
+  document.querySelectorAll('input[name="uvaTraj"], input[name="lacTraj"]').forEach(function(el){
+    el.addEventListener('change', computeRisk);
   });
 
-  renderTrajectory();
   computeRisk();
 })();
 </script>
