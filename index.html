@@ -101,7 +101,6 @@
     align-items:center;
     justify-content:space-between;
     gap:16px;
-    box-shadow:0 1px 0 rgba(0,0,0,0.02);
     flex-wrap:wrap;
   }
   .score-label{
@@ -113,7 +112,7 @@
   }
   .score-value{
     font-family:"IBM Plex Mono", monospace;
-    font-size:40px;
+    font-size:30px;
     font-weight:600;
     line-height:1;
     font-variant-numeric:tabular-nums;
@@ -314,13 +313,18 @@
     flex-direction:column;
     align-items:flex-start;
     gap:8px;
-    padding-top:14px;
-    border-top:1px solid var(--border);
+    margin-top:16px;
+    padding:18px 20px;
+    background:var(--accent-soft);
+    border-radius:12px;
   }
+  .risk-output .score-label{ color:var(--accent); }
   .risk-output .value{
     font-family:"IBM Plex Mono", monospace;
-    font-size:32px;
+    font-size:52px;
     font-weight:600;
+    line-height:1;
+    color:var(--accent);
     font-variant-numeric:tabular-nums;
   }
   .risk-note{ font-size:11.5px; color:var(--ink-dim); line-height:1.5; margin:0; }
@@ -476,7 +480,7 @@
         </div>
       </div>
 
-      <div class="risk-output" style="margin-top:16px;">
+      <div class="risk-output">
         <div>
           <p class="score-label">Predicted mortality risk</p>
           <div class="value" id="riskOutput">—</div>
