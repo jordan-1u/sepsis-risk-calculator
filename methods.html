@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SENTRY-Africa Methods</title>
+<style>
+  :root { --bg: #ffffff; --text: #1d1d1f; --muted: #5f6368; --accent: #002357; --rule: #e3e5e8; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #111418; --text: #f2f2f2; --muted: #a8adb3; --accent: #8fb4ff; --rule: #2a2f36; }
+  }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  main { max-width: 680px; margin: 0 auto; padding: 48px 16px 64px; }
+  h1 { font-size: 28px; line-height: 1.25; margin: 0 0 4px; color: var(--accent); }
+  .updated { color: var(--muted); font-size: 14px; margin: 0 0 32px; }
+  h2 { font-size: 18px; margin: 32px 0 8px; padding-top: 24px; border-top: 1px solid var(--rule); }
+  p, li { margin: 0 0 12px; }
+  ul, ol { padding-left: 20px; }
+  a { color: var(--accent); overflow-wrap: anywhere; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; margin: 0 0 12px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+  code { font: 14px ui-monospace, SFMono-Regular, Menlo, monospace; }
+</style>
+</head>
+<body>
+<main>
+  <h1>SENTRY-Africa: Methods and Sources</h1>
+  <p class="updated">Last updated: October 20, 2026</p>
+
+  <p>This page documents how the SENTRY-Africa app calculates each result, and the published sources behind it. The app is a reference aid for clinicians. It is not a diagnostic device and does not replace clinical judgment.</p>
+
+  <h2>Universal Vital Assessment (UVA) score</h2>
+  <p>The UVA score and its risk categories come from Moore et al. [1]. Points are added for each variable:</p>
+  <table>
+    <tr><th>Variable</th><th>Criterion</th><th>Points</th></tr>
+    <tr><td>Temperature</td><td>&lt;36 °C</td><td>2</td></tr>
+    <tr><td>Heart rate</td><td>≥120 bpm</td><td>1</td></tr>
+    <tr><td>Respiratory rate</td><td>≥30 breaths/min</td><td>1</td></tr>
+    <tr><td>Systolic BP</td><td>&lt;90 mm Hg</td><td>1</td></tr>
+    <tr><td>SpO₂</td><td>&lt;92%</td><td>2</td></tr>
+    <tr><td>Glasgow Coma Scale [3]</td><td>&lt;15</td><td>4</td></tr>
+    <tr><td>HIV infection</td><td>Yes</td><td>2</td></tr>
+  </table>
+  <p>Totals of 0–1 are low risk, 2–4 intermediate, and ≥5 high [1].</p>
+
+  <h2>Lactate and UVA score trajectories</h2>
+  <p>Point-of-care lactate predicts sepsis mortality in Uganda [2]. In the SENTRY-Africa cohort (adults with sepsis in Mbarara, Uganda), lactate and UVA score were measured at 0, 6, 12, 18 and 24 hours after admission. Trajectory groups were identified with latent class mixed models [4]:</p>
+  <ul>
+    <li>UVA score: Class 1 high, decreasing; Class 2 high, stable.</li>
+    <li>Lactate: Class 1 low, stable; Class 2 high, decreasing; Class 3 increasing.</li>
+  </ul>
+  <p>In the app, the user chooses the class that best matches the patient's serial values. The app does not assign classes automatically.</p>
+
+  <h2>14-day mortality model</h2>
+  <p>Predicted 14-day mortality comes from a logistic regression fitted in the SENTRY-Africa cohort (n = 155 with complete data):</p>
+  <p><code>logit(p) = −3.45938 + 0.42977 × baseline UVA + 1.40085 × [UVA class 2] + 1.31142 × [lactate class 2] + 2.80731 × [lactate class 3] − 0.53399 × IV fluids (L)</code></p>
+  <p>Apparent AUC 0.824 (95% CI 0.756–0.891). The app shows results below 10% as low risk, 10–40% as intermediate, and 40% or higher as high.</p>
+
+  <h2>Limitations</h2>
+  <p>The model was derived in a single cohort and has not been externally validated or peer reviewed. Its AUC was measured in the derivation cohort, so performance elsewhere may be lower. The negative coefficient for IV fluids reflects patterns in the cohort and is not a treatment recommendation.</p>
+
+  <h2>References</h2>
+  <ol>
+    <li>Moore CC, Hazard R, Saulters KJ, et al. Derivation and validation of a universal vital assessment (UVA) score: a tool for predicting mortality in adult hospitalised patients in sub-Saharan Africa. <i>BMJ Glob Health</i>. 2017;2(2):e000344. <a href="https://doi.org/10.1136/bmjgh-2017-000344">https://doi.org/10.1136/bmjgh-2017-000344</a></li>
+    <li>Moore CC, Jacob ST, Pinkerton R, et al. Point-of-care lactate testing predicts mortality of severe sepsis in a predominantly HIV type 1–infected patient population in Uganda. <i>Clin Infect Dis</i>. 2008;46(2):215–222. <a href="https://doi.org/10.1086/524665">https://doi.org/10.1086/524665</a></li>
+    <li>Teasdale G, Jennett B. Assessment of coma and impaired consciousness: a practical scale. <i>Lancet</i>. 1974;2(7872):81–84. <a href="https://doi.org/10.1016/S0140-6736(74)91639-0">https://doi.org/10.1016/S0140-6736(74)91639-0</a></li>
+    <li>Proust-Lima C, Philipps V, Liquet B. Estimation of extended mixed models using latent classes and latent processes: the R package lcmm. <i>J Stat Softw</i>. 2017;78(2):1–56. <a href="https://doi.org/10.18637/jss.v078.i02">https://doi.org/10.18637/jss.v078.i02</a></li>
+  </ol>
+</main>
+</body>
+</html>
